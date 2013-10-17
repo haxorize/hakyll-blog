@@ -1,6 +1,7 @@
 --------------------------------------------------------------------------------
 {-# LANGUAGE OverloadedStrings #-}
 import Data.Monoid (mappend)
+import System.FilePath
 import Hakyll
 
 
@@ -8,25 +9,25 @@ import Hakyll
 main :: IO ()
 main = hakyll $ do
     -- Copy images
-    match "img/*" $ do
-        route idRoute
+    match "resources/images/*" $ do
+        route   rootRoute
         compile copyFileCompiler
 
     -- Compress CSS
-    match "css/*" $ do
-        route idRoute
+    match "resources/styles/*" $ do
+        route   rootRoute
         compile compressCssCompiler
 
     -- Render static pages
     --match (fromList ["about.rst", "contact.markdown"]) $ do
-    --    route $ setExtension "html"
+    --    route   $ setExtension "html"
     --    compile $ pandocCompiler
     --        >>= loadAndApplyTemplate "templates/default.html" defaultContext
     --        >>= relativizeUrls
 
     -- Render posts
     match "posts/*" $ do
-        route $ setExtension "html"
+        route   $ setExtension "html"
         compile $ pandocCompiler
             >>= loadAndApplyTemplate "templates/post.html" postContext
             >>= loadAndApplyTemplate "templates/default.html" postContext
@@ -34,7 +35,7 @@ main = hakyll $ do
 
     -- Render post archive
     create ["archive.html"] $ do
-        route idRoute
+        route   idRoute
         compile $ do
             posts <- recentFirst =<< loadAll "posts/*"
             let archiveContext =
@@ -49,7 +50,7 @@ main = hakyll $ do
 
     -- Render homepage
     match "index.html" $ do
-        route idRoute
+        route   idRoute
         compile $ do
             posts <- recentFirst =<< loadAll "posts/*"
             let indexContext =
@@ -66,8 +67,18 @@ main = hakyll $ do
     match ("partials/*" .||. "templates/*") $ compile templateCompiler
 
 
+-- Contexts
 --------------------------------------------------------------------------------
 postContext :: Context String
 postContext =
     dateField "date" "%B %e, %Y" `mappend`
     defaultContext
+
+
+-- Routes
+--------------------------------------------------------------------------------
+rootRoute :: Routes
+rootRoute = customRoute removeTopDirectory
+
+removeTopDirectory :: Identifier -> FilePath
+removeTopDirectory = joinPath . tail . splitPath . toFilePath
