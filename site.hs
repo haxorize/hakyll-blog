@@ -7,7 +7,7 @@ import Hakyll
 --------------------------------------------------------------------------------
 main :: IO ()
 main = hakyll $ do
-    match "images/*" $ do
+    match "img/*" $ do
         route idRoute
         compile copyFileCompiler
 
@@ -55,6 +55,8 @@ main = hakyll $ do
                 >>= applyAsTemplate indexContext
                 >>= loadAndApplyTemplate "templates/default.html" indexContext
                 >>= relativizeUrls
+
+    match "partials/*" $ compile templateCompiler
 
     match "templates/*" $ compile templateCompiler
 
