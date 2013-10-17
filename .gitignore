@@ -1,3 +1,6 @@
+_cache
+_site
+site
 dist
 cabal-dev
 *.o
