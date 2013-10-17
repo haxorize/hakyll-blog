@@ -7,20 +7,24 @@ import Hakyll
 --------------------------------------------------------------------------------
 main :: IO ()
 main = hakyll $ do
+    -- Copy images
     match "img/*" $ do
         route idRoute
         compile copyFileCompiler
 
+    -- Compress CSS
     match "css/*" $ do
         route idRoute
         compile compressCssCompiler
 
+    -- Render static pages
     --match (fromList ["about.rst", "contact.markdown"]) $ do
     --    route $ setExtension "html"
     --    compile $ pandocCompiler
     --        >>= loadAndApplyTemplate "templates/default.html" defaultContext
     --        >>= relativizeUrls
 
+    -- Render posts
     match "posts/*" $ do
         route $ setExtension "html"
         compile $ pandocCompiler
@@ -28,6 +32,7 @@ main = hakyll $ do
             >>= loadAndApplyTemplate "templates/default.html" postContext
             >>= relativizeUrls
 
+    -- Render post archive
     create ["archive.html"] $ do
         route idRoute
         compile $ do
@@ -42,6 +47,7 @@ main = hakyll $ do
                 >>= loadAndApplyTemplate "templates/default.html" archiveContext
                 >>= relativizeUrls
 
+    -- Render homepage
     match "index.html" $ do
         route idRoute
         compile $ do
@@ -56,9 +62,8 @@ main = hakyll $ do
                 >>= loadAndApplyTemplate "templates/default.html" indexContext
                 >>= relativizeUrls
 
-    match "partials/*" $ compile templateCompiler
-
-    match "templates/*" $ compile templateCompiler
+    -- Read templates
+    match ("partials/*" .||. "templates/*") $ compile templateCompiler
 
 
 --------------------------------------------------------------------------------
