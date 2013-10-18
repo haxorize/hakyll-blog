@@ -16,9 +16,7 @@ main = hakyll $ do
     -- Preprocess Sass and compress CSS
     match "resources/styles/all.scss" $ do
         route   $ rootRoute `composeRoutes` setExtension "css"
-        compile $ getResourceString
-            >>= withItemBody (unixFilter "sass" ["-s", "--scss"])
-            >>= return . fmap compressCss
+        compile $ sassCompiler
 
     -- Render posts
     match "posts/*" $ do
@@ -37,44 +35,37 @@ main = hakyll $ do
                     listField "posts" postContext (return posts) `mappend`
                     constField "title" "Home" `mappend`
                     defaultContext
-
             getResourceBody
                 >>= applyAsTemplate indexContext
                 >>= loadAndApplyTemplate "templates/default.html" indexContext
                 >>= relativizeUrls
 
-    -- Render static pages
-    --match (fromList ["about.rst", "contact.markdown"]) $ do
-    --    route   $ setExtension "html"
-    --    compile $ pandocCompiler
-    --        >>= loadAndApplyTemplate "templates/default.html" defaultContext
-    --        >>= relativizeUrls
-
-    -- Render post archive
-    --create ["archive.html"] $ do
-    --    route   idRoute
-    --    compile $ do
-    --        posts <- recentFirst =<< loadAll "posts/*"
-    --        let archiveContext =
-    --                listField "posts" postContext (return posts) `mappend`
-    --                constField "title" "Archives" `mappend`
-    --                defaultContext
-
-    --        makeItem ""
-    --            >>= loadAndApplyTemplate "templates/archive.html" archiveContext
-    --            >>= loadAndApplyTemplate "templates/default.html" archiveContext
-    --            >>= relativizeUrls
+    -- Render RSS feed
+    create ["atom.xml"] $ do
+        route   idRoute
+        compile $ do
+            let feedContext = 
+                    postContext `mappend`
+                    constField "description" "This is the post description"
+            posts <- fmap (take 10) . recentFirst =<< loadAll "posts/*"
+            renderAtom feedConfiguration feedContext posts
 
     -- Read templates
     match ("partials/*" .||. "templates/*") $ compile templateCompiler
 
 
+-- Compilers
+--------------------------------------------------------------------------------
+sassCompiler :: Compiler (Item String)
+sassCompiler = getResourceString
+    >>= withItemBody (unixFilter "sass" ["-s", "--scss"])
+    >>= return . fmap compressCss
+
+
 -- Contexts
 --------------------------------------------------------------------------------
 postContext :: Context String
-postContext =
-    dateField "date" "%B %e, %Y" `mappend`
-    defaultContext
+postContext = dateField "date" "%B %e, %Y" `mappend` defaultContext
 
 
 -- Routes
@@ -84,3 +75,15 @@ rootRoute = customRoute removeTopDirectory
 
 removeTopDirectory :: Identifier -> FilePath
 removeTopDirectory = joinPath . tail . splitPath . toFilePath
+
+
+-- Config
+--------------------------------------------------------------------------------
+feedConfiguration :: FeedConfiguration
+feedConfiguration = FeedConfiguration
+    { feedTitle       = "haxorize.com"
+    , feedDescription = "The personal blog of Nick Bourgeois"
+    , feedAuthorName  = "Nick Bourgeois"
+    , feedAuthorEmail = "nick@haxorize.com"
+    , feedRoot        = "http://haxorize.com"
+    }
