@@ -1,7 +1,9 @@
 --------------------------------------------------------------------------------
 {-# LANGUAGE OverloadedStrings #-}
+
 import Data.Monoid (mappend)
 import System.FilePath
+
 import Hakyll
 
 
@@ -21,10 +23,11 @@ main = hakyll $ do
     -- Render posts
     match "posts/*" $ do
         route   $ setExtension "html"
-        compile $ pandocCompiler
-            >>= loadAndApplyTemplate "templates/post.html" postContext
-            >>= loadAndApplyTemplate "templates/default.html" postContext
-            >>= relativizeUrls
+        compile $ pandocCompiler >>=
+                  loadAndApplyTemplate "templates/post.html" postContext >>=
+                  saveSnapshot "content" >>=
+                  loadAndApplyTemplate "templates/default.html" postContext >>=
+                  relativizeUrls
 
     -- Render homepage
     match "index.html" $ do
@@ -35,19 +38,20 @@ main = hakyll $ do
                     listField "posts" postContext (return posts) `mappend`
                     constField "title" "Home" `mappend`
                     defaultContext
-            getResourceBody
-                >>= applyAsTemplate indexContext
-                >>= loadAndApplyTemplate "templates/default.html" indexContext
-                >>= relativizeUrls
+            getResourceBody >>=
+                applyAsTemplate indexContext >>=
+                loadAndApplyTemplate "templates/default.html" indexContext >>=
+                relativizeUrls
 
-    -- Render RSS feed
+    -- Render Atom feed
     create ["atom.xml"] $ do
         route   idRoute
         compile $ do
-            let feedContext = 
+            let feedContext =
                     postContext `mappend`
-                    constField "description" "This is the post description"
-            posts <- fmap (take 10) . recentFirst =<< loadAll "posts/*"
+                    bodyField "description"
+            posts <- fmap (take 10) . recentFirst =<<
+                loadAllSnapshots "posts/*" "content"
             renderAtom feedConfiguration feedContext posts
 
     -- Read templates
@@ -57,9 +61,9 @@ main = hakyll $ do
 -- Compilers
 --------------------------------------------------------------------------------
 sassCompiler :: Compiler (Item String)
-sassCompiler = getResourceString
-    >>= withItemBody (unixFilter "sass" ["-s", "--scss"])
-    >>= return . fmap compressCss
+sassCompiler = getResourceString >>=
+               withItemBody (unixFilter "sass" ["-s", "--scss"]) >>=
+               return . fmap compressCss
 
 
 -- Contexts
