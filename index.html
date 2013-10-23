@@ -1,16 +1,11 @@
 ---
-title: Home
+title: haxorize.com
+description: The personal blog of Nick Bourgeois.
 ---
 
-<h2>Welcome</h2>
-
-<img src="/images/haskell-logo.png" style="float: right; margin: 10px;" />
-
-<p>Welcome to my blog!</p>
-
-<p>I've reproduced a list of recent posts here for your reading pleasure:</p>
-
-<h2>Posts</h2>
-$partial("partials/post-list.html")$
-
-<p>…or you can find more in the <a href="/archive.html">archives</a>.
+$for(posts)$
+    <article>
+        <h1><a href="$url$">$title$</a> <span>$date$</span></h1>
+        $body$
+    </article>
+$endfor$

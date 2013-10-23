@@ -1,1 +1,91 @@
-@import 'resources/styles/normalize';
+@import 'resources/styles/vendor/normalize';
+
+$dark: #111;
+$light: #eee;
+
+@mixin clearfix {
+    &:before,
+    &:after {
+        content: '';
+        display: table;
+    }
+
+    &:after { clear: both; }
+}
+
+html {
+    background-color: $light;
+    color: $dark;
+}
+
+a {
+    &:link { color: #295a98; }
+
+    &:visited { color: #4c489b; }
+
+    &:hover,
+    &:active { color: #7e88e5; }
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 { font-weight: normal; }
+
+#container {
+    margin-right: auto;
+    margin-left: auto;
+    max-width: 960px;
+    padding: 1em;
+
+    > footer {
+        p {
+            font-size: .9em;
+            text-align: center;
+        }
+    }
+}
+
+article {
+    h1 {
+        span {
+            font-size: .6em;
+            font-style: italic;
+            margin-left: .3em;
+        }
+    }
+
+    header {
+        @include clearfix;
+
+        h1 {
+            float: left;
+            margin-top: 0;
+        }
+
+        a { float: right; }
+    }
+
+    blockquote { font: 1.2em 'chaparral-pro-1', 'chaparral-pro-2', serif; }
+
+    .footnotes {
+        hr { color: $dark; }
+
+        ol {
+            li {
+                p {
+                    a + a { margin-left: .3em; }
+                }
+            }
+        }
+    }
+
+    footer {
+        p {
+            font: italic 1.2em 'chaparral-pro-1', 'chaparral-pro-2', serif;
+            text-align: center;
+        }
+    }
+}

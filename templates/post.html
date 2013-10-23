@@ -1,8 +1,10 @@
-<div class="info">
-    Posted on $date$
-    $if(author)$
-        by $author$
-    $endif$
-</div>
-
-$body$
+<article>
+    <header>
+        <h1>$title$</h1>
+        <a href="/">&laquo; haxorize.com</a>
+    </header>
+    $body$
+    <footer>
+        <p>$date$</p>
+    </footer>
+</article>
